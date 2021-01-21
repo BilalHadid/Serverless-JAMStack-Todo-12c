@@ -7,6 +7,14 @@ const typeDefs = gql`
   type Query {
     message: String
   }
+  type Mutation {
+    create(task: String!): Todo
+  }
+  type Todo {
+    id: ID!
+    task: String!
+    status: Boolean!
+  }
 `;
 
 const resolvers = {
@@ -23,6 +31,26 @@ const resolvers = {
         return result.data.message;
       } catch (err) {
         return err.toString();
+      }
+    },
+  },
+  Mutation: {
+    create: async (_, { task }) => {
+      try {
+        var client = new faunadb.Client({
+          secret: "fnAEAHLXkJACBU2Rat9sSNEplPxqRcWucqnOI-zc",
+        });
+        const result = await client.query(
+          q.Create(q.Collection("CrudData"), {
+            data: {
+              task: task,
+              status: true,
+            },
+          })
+        );
+        return result.ref.data;
+      } catch (error) {
+        console.log(error);
       }
     },
   },
