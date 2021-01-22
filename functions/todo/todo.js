@@ -5,15 +5,15 @@ const faunadb = require("faunadb"),
 
 const typeDefs = gql`
   type Query {
-    message: String
-  }
-  type Mutation {
-    create(task: String!): Todo
+    message: [Todo!]
   }
   type Todo {
     id: ID!
     task: String!
-    status: Boolean!
+  }
+  type Mutation {
+    create(task: String!): Todo
+    removeTodo(id: ID!): Todo
   }
 `;
 
@@ -24,30 +24,48 @@ const resolvers = {
         var client = new faunadb.Client({
           secret: "fnAEAHLXkJACBU2Rat9sSNEplPxqRcWucqnOI-zc",
         });
-        let result = await client.query(
-          q.Get(q.Ref(q.Collection("CrudData"), "288339664245359111"))
+        // let result = await client.query(
+        //   q.Get(q.Ref(q.Collection("CrudData"), "288339664245359111"))
+        // );
+        var result = await client.query(
+          q.Map(
+            q.Paginate(q.Documents(q.Collection("CrudData"))),
+            q.Lambda((x) => q.Get(x))
+          )
         );
-
-        return result.data.message;
+        return result.data.map((d) => {
+          return {
+            id: d.ref.id,
+            task: d.data.message,
+          };
+        });
       } catch (err) {
         return err.toString();
       }
     },
   },
   Mutation: {
-    create: async (_, { task }) => {
+    create: async (_, args) => {
       try {
         var client = new faunadb.Client({
           secret: "fnAEAHLXkJACBU2Rat9sSNEplPxqRcWucqnOI-zc",
         });
         const result = await client.query(
           q.Create(q.Collection("CrudData"), {
-            data: {
-              task: task,
-              status: true,
-            },
+            data: args,
           })
         );
+        return result.data;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    removeTodo: async (_, args) => {
+      try {
+        var result = await client.query(
+          q.Delete(q.Ref(q.Collection("CrudData"), args.id))
+        );
+        console.log("Document Deleted : ", result.ref.id);
         return result.ref.data;
       } catch (error) {
         console.log(error);
@@ -59,8 +77,6 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  playground: true,
-  introspection: true,
 });
 
 exports.handler = server.createHandler();
