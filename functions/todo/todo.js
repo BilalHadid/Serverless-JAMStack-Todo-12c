@@ -36,7 +36,7 @@ const resolvers = {
         return result.data.map((d) => {
           return {
             id: d.ref.id,
-            task: d.data.message,
+            task: d.data.task,
           };
         });
       } catch (err) {
@@ -61,11 +61,15 @@ const resolvers = {
       }
     },
     removeTodo: async (_, args) => {
+      console.log(args);
       try {
+        var client = new faunadb.Client({
+          secret: "fnAEAHLXkJACBU2Rat9sSNEplPxqRcWucqnOI-zc",
+        });
         var result = await client.query(
           q.Delete(q.Ref(q.Collection("CrudData"), args.id))
         );
-        console.log("Document Deleted : ", result.ref.id);
+        // console.log("Document Deleted : ", result.ref.id);
         return result.ref.data;
       } catch (error) {
         console.log(error);

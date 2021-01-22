@@ -2,7 +2,10 @@ import React, { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
 import { Button } from "@material-ui/core";
-import Layout from "../component/Layout";
+import AddData from "../component/AddData";
+import Loader from "../component/Loader";
+import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
+import "./index.css";
 
 const APOLLO_QUERY = gql`
   {
@@ -32,34 +35,31 @@ const IndexPage: React.FC<any> = () => {
     });
   };
   return (
-    <Layout>
-      <div>
-        <h2>
-          Data Received from Apollo Client at runtime from Serverless Function:
-        </h2>
-        {loading && <p>Loading Client Side Querry...</p>}
-        {error && <p>Error: ${error.message}</p>}
-        {data && data.message && (
-          <div>
-            {data.message.map((d, i) => {
-              return (
-                <div key={i}>
-                  <h1>{d.task}</h1>
-                  <Button
-                    type="submit"
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => removTod(d.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </Layout>
+    <div className="Main">
+      <AddData />
+      {loading && <Loader />}
+      {error && <p>Error: ${error.message}</p>}
+      {data && data.message && (
+        <div className="task">
+          {data.message.map((d, i) => {
+            return (
+              <div key={i} className="listTask">
+                <h3>{d.task}</h3>
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => removTod(d.id)}
+                >
+                  Delete
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 };
 export default IndexPage;

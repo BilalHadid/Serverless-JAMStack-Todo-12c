@@ -1,13 +1,10 @@
-import React, { ReactNode } from "react";
+import React from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import gql from "graphql-tag";
 import { Button } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import { useState } from "react";
-type layoutProps = {
-  children: ReactNode;
-};
-
+import "./style.css";
 const APOLLO_QUERY = gql`
   {
     message {
@@ -25,7 +22,7 @@ const create_todo = gql`
   }
 `;
 
-const Layout = ({ children }) => {
+const AddData = () => {
   const [data, setData] = useState("");
   const [addNewRecord] = useMutation(create_todo);
   let addRecord = (e) => {
@@ -33,7 +30,7 @@ const Layout = ({ children }) => {
     try {
       addNewRecord({
         variables: {
-          data: data,
+          task: data,
         },
         refetchQueries: [{ query: APOLLO_QUERY }],
       });
@@ -45,16 +42,22 @@ const Layout = ({ children }) => {
     setData(e.target.value);
   };
   return (
-    <div>
-      {children}
-      <div style={{ marginTop: "10px" }}>
+    <div className="AddTask">
+      <div>
         <form onSubmit={(e) => addRecord(e)}>
           <TextField
             onChange={handleChange}
             id="standard-basic"
             label="Add Todo"
+            variant="outlined"
+            color="secondary"
           />
-          <Button type="submit" variant="outlined" color="secondary">
+          <Button
+            type="submit"
+            variant="outlined"
+            color="secondary"
+            style={{ padding: "15px" }}
+          >
             Add Todo
           </Button>
         </form>
@@ -63,4 +66,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default Layout;
+export default AddData;
